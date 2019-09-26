@@ -37,7 +37,8 @@ try:
     from . import assistant_helpers
 except (SystemError, ImportError):
     import assistant_helpers
-
+from dotenv import load_dotenv
+load_dotenv("config.env")
 
 ASSISTANT_API_ENDPOINT = 'embeddedassistant.googleapis.com'
 DEFAULT_GRPC_DEADLINE = 60 * 3 + 5
@@ -50,7 +51,6 @@ AUTHORIZED_USER_IDS = list(
         )
 DEVICE_MODEL_ID = os.environ.get('DEVICE_MODEL_ID')
 DEVICE_ID = os.environ.get('DEVICE_ID')
-
 
 class SampleTextAssistant(object):
     """Sample Assistant that supports text based conversations.
@@ -135,12 +135,10 @@ def assist(bot, update):
         message_tokens = message.text.split(' ', 1)
         if len(message_tokens) > 1:
             message_text = message_tokens[1]
-            # Get response from Google Assistant API.
-            display_text = assistant.assist(text_query=message_text)
             # Verify that the message is in an authorized chat or from an
             # authorized user.
             if (message.chat_id not in ALLOWED_CHAT_IDS
-                    and message.from_user.id not in AUTHORIZED_USER_IDS):
+                    or message.from_user.id not in AUTHORIZED_USER_IDS):
                 message.reply_text('Unauthorized')
                 should_leave_chat = True
                 # If unauthorized and no authorized users are in the chat,
@@ -153,7 +151,9 @@ def assist(bot, update):
                         pass
                 if should_leave_chat:
                     message.chat.leave()
-            elif display_text is not None:
+            else:
+                # Get response from Google Assistant API.
+                display_text = assistant.assist(text_query=message_text)
                 update.message.reply_text(display_text)
 
 
