@@ -8,3 +8,5 @@ pathlib2>=2.3.0,<3
 python-telegram-bot==10.0.1
 telegram==0.0.1
 google-assistant-sdk==0.4.4
+dotenv
+
